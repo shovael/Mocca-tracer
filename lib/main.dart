@@ -7,8 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:flutter_sms/flutter_sms.dart';
 
-//TO-DO 1)get the owner phone number 2)save it localy  3)change the resipions with the real number 4)maybe do a check number part
-
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -69,21 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
         String json = '{latitude: $latitude and longitude: $longitude }'; //ya yo get it
         Response response = await post(url, headers: headers , body: json );//as it looks like
         print(response.statusCode);
-        }else{
-          if(counti<3){
-          counti++;
-          print(counti);
-          }else{
-                    //the SMS part, you can change the message here
-                 String _result = await FlutterSms
-                   .sendSMS(message: "you dont have internet connection", recipients: ['05237369797'])
-                   .catchError((onError) {
-                 print(onError);
-               });
-                 print(_result);
-                 exit(0);
-               }
-          }
+        }
         //                                         again progras check and post status
         // int statusCode = response.statusCode; //
         // print("jason file $json and statuscode $statusCode"); //
