@@ -1,8 +1,13 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
-import 'dart:async';
 import 'package:http/http.dart';
+import 'package:flutter_sms/flutter_sms.dart';
+
+//TO-DO 1)get the owner phone number 2)save it localy  3)change the resipions with the real number 4)maybe do a check number part
 
 void main() => runApp(MyApp());
 
@@ -32,15 +37,16 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   bool active =false;
   int duration = 5;
+  int counti = 0;
   final durationNum = TextEditingController();
 
 
   gps(bool isActive) async{
     String status = 'GeolocationStatus.granted';
-    // int count = 1;
+    int count = 0; //
     GeolocationStatus geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
     //                           check if you have allowed GPS permision or not
-    // print(geolocationStatus);
+    // print(geolocationStatus); //
 
     if(geolocationStatus.toString() == status){
       if(active == false && isActive == true){
@@ -52,18 +58,35 @@ class _MyHomePageState extends State<MyHomePage> {
          double latitude = position.latitude;
          double longitude = position.longitude;
          //                 this three prints are meant for progress check
-        //  print(position);
-        //  print(count);
-        //  print(duration);
-        //  count++;
+         print(position); //
+        //  print(count);//
+         print(duration);//
+        //  count++;//        
 
-        String url = 'https://jsonplaceholder.typicode.com/posts';// please type your server url here
+        if(await handleConnection()){ //the SMS part
+        String url = 'http://159.89.225.231:7770/api/sms';// please type your server url here
         Map<String, String> headers = {"GPS_Coordinanet": "Mocca_Tracer_app/json"}; // this is the message header, i picked it but you can change it
         String json = '{latitude: $latitude and longitude: $longitude }'; //ya yo get it
         Response response = await post(url, headers: headers , body: json );//as it looks like
+        print(response.statusCode);
+        }else{
+          if(counti<3){
+          counti++;
+          print(counti);
+          }else{
+                    //the SMS part, you can change the message here
+                 String _result = await FlutterSms
+                   .sendSMS(message: "you dont have internet connection", recipients: ['05237369797'])
+                   .catchError((onError) {
+                 print(onError);
+               });
+                 print(_result);
+                 exit(0);
+               }
+          }
         //                                         again progras check and post status
-        // int statusCode = response.statusCode;
-        // print("jason file $json and statuscode $statusCode");
+        // int statusCode = response.statusCode; //
+        // print("jason file $json and statuscode $statusCode"); //
         
         //wait an set amount of time for your picking.  you can change it to minutes or hours by switching the seconds with......(ctrl + space)
          await Future.delayed(Duration(seconds: duration), );
@@ -105,6 +128,22 @@ class _MyHomePageState extends State<MyHomePage> {
     },
   );
     }
+  }
+
+
+  Future<bool> handleConnection() async{
+    try{
+    final result = await InternetAddress.lookup('google.com');
+    if(result.isNotEmpty && result[0].rawAddress.isNotEmpty){
+    print("connected");
+    counti=0;
+    return true;
+    } else 
+    return false;
+    }
+    on SocketException catch(_){
+      return false;
+      }
   }
 
   setDuration(){
