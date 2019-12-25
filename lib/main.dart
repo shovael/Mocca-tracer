@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:flutter_sms/flutter_sms.dart';
+import 'package:mocca_tracer/phonePage.dart';
 
 //TO-DO 1)get the owner phone number 2)save it localy  3)change the resipions with the real number 4)maybe do a check number part
 
@@ -20,15 +21,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Mocca Mobile Tracer'), 
+      home: PhonePage(),
+      // MyHomePage(title: 'Mocca Mobile Tracer'), 
       // Test1(),  
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key, this.title,this.phoneNum}) : super(key: key);
   final String title;
+  final String phoneNum;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -64,10 +67,14 @@ class _MyHomePageState extends State<MyHomePage> {
         //  count++;//        
 
         if(await handleConnection()){ //the SMS part
-        String url = 'http://159.89.225.231:7770/api/sms';// please type your server url here
+        var now = DateTime.now();
+        String num = widget.phoneNum;
+        String url = 'https://jsonplaceholder.typicode.com/posts';// please type your server url here
         Map<String, String> headers = {"GPS_Coordinanet": "Mocca_Tracer_app/json"}; // this is the message header, i picked it but you can change it
-        String json = '{latitude: $latitude and longitude: $longitude }'; //ya yo get it
+        String json = '{trackingTime: $now, clientId:1, sender:$num, alt:0, latitude: $latitude, longitude: $longitude }'; //ya yo get it
         Response response = await post(url, headers: headers , body: json );//as it looks like
+        print(now);
+        print(num);
         print(response.statusCode);
         }else{
           if(counti<3){
@@ -76,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }else{
                     //the SMS part, you can change the message here
                  String _result = await FlutterSms
-                   .sendSMS(message: "you dont have internet connection", recipients: ['05237369797'])
+                   .sendSMS(message: "where sorry but the server is down", recipients: ['0547551536'])
                    .catchError((onError) {
                  print(onError);
                });
