@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
         if(await handleConnection()){ //the SMS part
         var now = DateTime.now();
         String num = widget.phoneNum;
-        String url = 'https://jsonplaceholder.typicode.com/posts';// please type your server url here
+        String url = 'http://159.89.225.231:7770/api/sms';// please type your server url here and thats a test server https://jsonplaceholder.typicode.com/posts
         Map<String, String> headers = {"GPS_Coordinanet": "Mocca_Tracer_app/json"}; // this is the message header, i picked it but you can change it
         String json = '{trackingTime: $now, clientId:1, sender:$num, alt:0, latitude: $latitude, longitude: $longitude }'; //ya yo get it
         Response response = await post(url, headers: headers , body: json );//as it looks like
