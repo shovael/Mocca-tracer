@@ -41,6 +41,9 @@ class _MyHomePageState extends State<MyHomePage> {
   bool active =false;
   int duration = 5;
   int counti = 0;
+  double longitude;
+  double latitude;
+  int statusCode;
   final durationNum = TextEditingController();
 
 
@@ -58,24 +61,33 @@ class _MyHomePageState extends State<MyHomePage> {
        Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
        while(active){
          Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-         double latitude = position.latitude;
-         double longitude = position.longitude;
+         setState(() {
+           latitude = position.latitude;
+           longitude = position.longitude;
+         });
+
          //                 this three prints are meant for progress check
          print(position); //
         //  print(count);//
          print(duration);//
         //  count++;//        
 
-        if(await handleConnection()){ //the SMS part
         var now = DateTime.now();
         String num = widget.phoneNum;
         String url = 'http://159.89.225.231:7770/api/sms';// please type your server url here and thats a test server https://jsonplaceholder.typicode.com/posts
         Map<String, String> headers = {"GPS_Coordinanet": "Mocca_Tracer_app/json"}; // this is the message header, i picked it but you can change it
         String json = '{trackingTime: $now, clientId:1, sender:$num, alt:0, latitude: $latitude, longitude: $longitude }'; //ya yo get it
         Response response = await post(url, headers: headers , body: json );//as it looks like
+        //                                         again progras check and post status
         print(now);
         print(num);
         print(response.statusCode);
+         setState(() {
+           statusCode = response.statusCode;
+         });
+        print("jason file $json and statuscode $statusCode");
+        if(statusCode>300){
+        counti=0;
         }else{
           if(counti<3){
           counti++;
@@ -91,10 +103,6 @@ class _MyHomePageState extends State<MyHomePage> {
                  exit(0);
                }
           }
-        //                                         again progras check and post status
-        // int statusCode = response.statusCode; //
-        // print("jason file $json and statuscode $statusCode"); //
-        
         //wait an set amount of time for your picking.  you can change it to minutes or hours by switching the seconds with......(ctrl + space)
          await Future.delayed(Duration(seconds: duration), );
                     }
@@ -138,20 +146,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
-  Future<bool> handleConnection() async{
-    try{
-    final result = await InternetAddress.lookup('google.com');
-    if(result.isNotEmpty && result[0].rawAddress.isNotEmpty){
-    print("connected");
-    counti=0;
-    return true;
-    } else 
-    return false;
-    }
-    on SocketException catch(_){
-      return false;
-      }
-  }
+  // Future<bool> handleConnection() async{
+  //   try{
+  //   final result = await InternetAddress.lookup('google.com');
+  //   if(result.isNotEmpty && result[0].rawAddress.isNotEmpty){
+  //   print("connected");
+  //   return true;
+  //   } else 
+  //   return false;
+  //   }
+  //   on SocketException catch(_){
+  //     return false;
+  //     }
+  // }
 
   setDuration(){
     setState(() {
@@ -170,7 +177,7 @@ return Scaffold(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
         SizedBox(
-          height: 260,
+          height: 170,
           width: 10,
         ),
         RaisedButton(
@@ -217,6 +224,13 @@ return Scaffold(
             ),
           ],
         ),
+               SizedBox(
+              height: 100,
+              width: 160,
+              child: Center(
+                child: Text('longitude: $longitude   latitude: $latitude   status code: $statusCode'),
+              ),
+             ),
       ],
     ),
   ),
