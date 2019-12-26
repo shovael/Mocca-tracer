@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
         counti=0;
         }else{
           if(counti<3){
-          counti++;
+          // counti++;
           print(counti);
           }else{
                     //the SMS part, you can change the message here
