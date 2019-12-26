@@ -41,7 +41,7 @@ class _PhonePageState extends State<PhonePage> {
                   labelText: "   enter your phone number",
                   alignLabelWithHint: true,
                   ),
-                maxLength: 10,
+                maxLength: 12,
                 maxLengthEnforced: true,
                 controller: phoneNum,
                 onEditingComplete: () => popWindow(),
