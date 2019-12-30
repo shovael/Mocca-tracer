@@ -137,7 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
           //the errorHandler is devided in to three block 1) no interent connection 2) server is down 3) no gps permision
-  void connectionErrorHandler() async{
+  connectionErrorHandler() async{
                                                       // part 1
     if(statusConnection == ConnectivityResult.none){
                 return showDialog<void>(
@@ -158,6 +158,11 @@ class _MyHomePageState extends State<MyHomePage> {
               FlatButton(
                 child: Text('ok'),
                 onPressed: () {
+                  if(statusConnection != ConnectivityResult.none ){
+                    Navigator.of(context).pop();
+                    gps(false);
+                   }else
+                    gps(false);
                 },
               ),
             ],
