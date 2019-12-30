@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:flutter_sms/flutter_sms.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:mocca_tracer/phonePage.dart';
 
-//TO-DO 1)get the owner phone number 2)save it localy  3)change the resipions with the real number 4)maybe do a check number part
+//TO-DO2)save it localy phone 3)change the resipions with the real number+-
 
 void main() => runApp(MyApp());
 
@@ -41,24 +42,43 @@ class _MyHomePageState extends State<MyHomePage> {
   bool active =false;
   int duration = 5;
   int counti = 0;
+  int statusCode;
   double longitude;
   double latitude;
-  int statusCode;
+  ConnectivityResult statusConnection;
+  GeolocationStatus geolocationStatus;
   final durationNum = TextEditingController();
+
+  @override
+  void initState() {
+    checkMyConnection();
+    super.initState();
+  }
+
+
+  Future<String> checkMyConnection() async{
+
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      setState(() {
+        statusConnection = result;
+              print(statusConnection);
+      });
+  });
+  }
 
 
   gps(bool isActive) async{
     String status = 'GeolocationStatus.granted';
     int count = 0; //
-    GeolocationStatus geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
+    geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
     //                           check if you have allowed GPS permision or not
     // print(geolocationStatus); //
 
     if(geolocationStatus.toString() == status){
       if(active == false && isActive == true){
         active = true;
+        Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
 
-       Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
        while(active){
          Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
          setState(() {
@@ -71,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
         //  print(count);//
          print(duration);//
         //  count++;//        
-
+        if(statusConnection != ConnectivityResult.none){
         var now = DateTime.now().toIso8601String();
         String num = widget.phoneNum;
         String url = 'http://159.89.225.231:7770/api/sms';// please type your server url here and thats a test server https://jsonplaceholder.typicode.com/posts
@@ -86,23 +106,12 @@ class _MyHomePageState extends State<MyHomePage> {
            statusCode = response.statusCode;
          });
         print("json file $json and statuscode $statusCode");
-        if(statusCode<300){
-        counti=0;
-        }else{
-          if(counti<3){
-          // counti++;
-          print(counti);
-          }else{
-                    //the SMS part, you can change the message here
-                 String _result = await FlutterSms
-                   .sendSMS(message: "where sorry but the server is down", recipients: ['0547551536'])
-                   .catchError((onError) {
-                 print(onError);
-               });
-                 print(_result);
-                 exit(0);
-               }
-          }
+        serverErrorHandler();
+        }
+        else{
+          connectionErrorHandler();
+        }
+
         //wait an set amount of time for your picking.  you can change it to minutes or hours by switching the seconds with......(ctrl + space)
          await Future.delayed(Duration(seconds: duration), );
                     }
@@ -116,56 +125,102 @@ class _MyHomePageState extends State<MyHomePage> {
        }
     }
     else{
-      //                         if you dont have GPS then an alart dialog pops
-      return showDialog<void>(
-    context: context,
-    barrierDismissible: false, // user must tap button!
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Unable to use location'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              Text('You havent given permission to this app to use your location'),
-              Text('please go to your settings and do it manually'),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('ok'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
+      gpsErrorHandler();
     }
   }
 
-
-  // Future<bool> handleConnection() async{
-  //   try{
-  //   final result = await InternetAddress.lookup('google.com');
-  //   if(result.isNotEmpty && result[0].rawAddress.isNotEmpty){
-  //   print("connected");
-  //   return true;
-  //   } else 
-  //   return false;
-  //   }
-  //   on SocketException catch(_){
-  //     return false;
-  //     }
-  // }
 
   setDuration(){
     setState(() {
       duration = int.parse(durationNum.text);
     });
   }
-   
+
+          //the errorHandler is devided in to three block 1) no interent connection 2) server is down 3) no gps permision
+  void connectionErrorHandler() async{
+                                                      // part 1
+    if(statusConnection == ConnectivityResult.none){
+                return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Unable to access the internet'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('you dont have an internet connection'),
+                  Text('please handle it'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('ok'),
+                onPressed: () {
+                },
+              ),
+            ],
+          );
+        },
+       );
+      }
+  }
+
+
+  serverErrorHandler() async{
+                                                     // part 2
+    if(statusCode>300){
+      if(counti<3){
+       counti++;
+       print(counti);
+       }else{
+          //the SMS part, you can change the message here
+         String _result = await FlutterSms
+           .sendSMS(message: "where sorry but the server is down", recipients: ['0547551536'])
+            .catchError((onError) {
+          print(onError);
+        });
+          print(_result);
+         exit(0);
+       }
+    }
+  }
+
+
+  gpsErrorHandler(){
+    
+                                                     // part 3 (infinitalart dialog pops)
+    if(geolocationStatus.toString() != 'GeolocationStatus.granted'){
+       return showDialog<void>(
+     context: context,
+     barrierDismissible: false, // user must tap button!
+     builder: (BuildContext context) {
+       return AlertDialog(
+         title: Text('Unable to use location'),
+         content: SingleChildScrollView(
+           child: ListBody(
+             children: <Widget>[
+               Text('You havent given permission to this app to use your location'),
+               Text('please go to your settings and do it manually'),
+             ],
+           ),
+         ),
+         actions: <Widget>[
+           FlatButton(
+             child: Text('ok'),
+             onPressed: () {
+               Navigator.of(context).pop();
+             },
+           ),
+         ],
+       );
+     },
+   );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
 return Scaffold(
