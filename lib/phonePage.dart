@@ -16,7 +16,7 @@ class _PhonePageState extends State<PhonePage> {
     Navigator.push(
     context,
     MaterialPageRoute(
-        builder: (context) => MyHomePage(phoneNum: phoneNum.text, title: 'Mocca Mobile Tracer')));
+        builder: (context) => MyHomePage(phoneNum: phoneNum.text, title: 'Mocca Mobile Tracker')));
   }
 
   @override
@@ -25,7 +25,7 @@ class _PhonePageState extends State<PhonePage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-              title: Text("Mocca Tracer App"),
+              title: Text("Mocca Tracker App"),
         ),
         body: Center(
           child: Column(

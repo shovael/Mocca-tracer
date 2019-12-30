@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mocca Mobile Tracer',
+      title: 'Mocca Mobile Tracker',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
