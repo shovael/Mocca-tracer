@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
         String num = widget.phoneNum;
         String url = 'http://159.89.225.231:7770/api/sms';// please type your server url here and thats a test server https://jsonplaceholder.typicode.com/posts
         Map<String, String> headers = {"Content-Type": "application/json"}; // this is the message header, i picked it but you can change it
-        String json = '{trackingTime: "$now", clientId: 1, sender: 972549434350, alt:0,  lon: $longitude, lat: $latitude, azimuthDeg: 0.8 }'; //ya yo get it
+        String json = '{trackingTime: "$now", clientId: 1, sender: 972549434350, alt:0,  lon: $longitude, lat: $latitude}'; //ya yo get it
         Response response = await post(url, headers: headers , body: json );//as it looks like
         //                                         again progras check and post status
         print(now);
