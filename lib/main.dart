@@ -8,6 +8,7 @@ import 'package:http/http.dart';
 import 'package:flutter_sms/flutter_sms.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:mocca_tracer/phonePage.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 //TO-DO2)save it localy phone 3)change the resipions with the real number+-
 
@@ -23,8 +24,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: PhonePage(),
-      // MyHomePage(title: 'Mocca Mobile Tracer'), 
-      // Test1(),  
+      // MyHomePage(title: 'Mocca Mobile Tracer'),   
     );
   }
 }
@@ -52,11 +52,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     checkMyConnection();
+    checkMypPermission();
     super.initState();
   }
 
-
-  Future<String> checkMyConnection() async{
+// part of the init func - add a listener for the web connection
+  void checkMyConnection() async{
 
     Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
       setState(() {
@@ -65,11 +66,17 @@ class _MyHomePageState extends State<MyHomePage> {
       });
   });
   }
+  
+
+  void checkMypPermission() async{
+    PermissionStatus permission = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+    print(permission);
+  }
 
 
+//the MAIN/brain of all functions
   gps(bool isActive) async{
     String status = 'GeolocationStatus.granted';
-    int count = 0; //
     geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
     //                           check if you have allowed GPS permision or not
     // print(geolocationStatus); //
@@ -87,10 +94,8 @@ class _MyHomePageState extends State<MyHomePage> {
          });
 
          //                 this three prints are meant for progress check
-         print(position); //
-        //  print(count);//
-         print(duration);//
-        //  count++;//        
+         print(position);
+         print(duration);  
         if(statusConnection != ConnectivityResult.none){
         var now = DateTime.now().toIso8601String();
         String num = widget.phoneNum;
