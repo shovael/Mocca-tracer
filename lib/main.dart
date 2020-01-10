@@ -7,8 +7,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:flutter_sms/flutter_sms.dart';
 import 'package:connectivity/connectivity.dart';
-import 'package:mocca_tracer/phonePage.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:mocca_tracer/pages/phonePage.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+
+// import 'package:permission_handler/permission_handler.dart';
 
 //TO-DO2)save it localy phone 3)change the resipions with the real number+-
 
@@ -21,7 +23,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Mocca Mobile Tracker',
       theme: ThemeData(
+        brightness: Brightness.light,
         primarySwatch: Colors.blue,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.orange, 
+        primaryColor: Colors.black,
       ),
       home: PhonePage(),
       // MyHomePage(title: 'Mocca Mobile Tracer'),   
@@ -52,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     checkMyConnection();
-    checkMypPermission();
+    // checkMypPermission();
     super.initState();
   }
 
@@ -68,10 +76,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   
 
-  void checkMypPermission() async{
-    PermissionStatus permission = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
-    print(permission);
-  }
+  // void checkMypPermission() async{
+  //   PermissionStatus permission = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+  //   print(permission);
+  // }
 
 
 //the MAIN/brain of all functions
@@ -237,14 +245,27 @@ return Scaffold(
   appBar: AppBar(
     title: Text("Mocca Tracer App"),
   ) ,
-  body: Center(
-    child: Column(
+  body: SingleChildScrollView(
+        child: Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
-        SizedBox(
-          height: 170,
-          width: 10,
+        Padding(padding: EdgeInsets.all(50),),
+        CircularPercentIndicator(
+          radius: 120.0,
+          lineWidth: 13.0,
+          animation: true,
+          percent: 0.78,
+          center: new Text(
+            "50 sec",
+             style:
+                new TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 20.0),
+          ),
+           circularStrokeCap: CircularStrokeCap.round,
+          progressColor: Colors.purple,
         ),
+        Padding(padding: EdgeInsets.all(17),),
         RaisedButton(
           onPressed: () => gps(true),
           child: Text('Turn on'),
@@ -280,7 +301,10 @@ return Scaffold(
                 maxLength: 3,
                 maxLengthEnforced: true,
                 controller: durationNum,
-                onEditingComplete: () => setDuration(),
+                onEditingComplete: () => {
+                  FocusScope.of(context).requestFocus(FocusNode()),
+                  setDuration(),
+                 },
                 keyboardType: TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
                 WhitelistingTextInputFormatter.digitsOnly
